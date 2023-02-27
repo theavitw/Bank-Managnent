@@ -1,157 +1,335 @@
-import  sqlite3
+import sqlite3
+import random
+import string
 
-con  =  sqlite3.connect ('Bank8.db')
-cursor  =  con.cursor()
+con = sqlite3.connect('Bank88.db')
+cursor = con.cursor()
 
-cursor.execute("CREATE TABLE IF NOT EXISTS Branch(branch_name varchar(30), NAccounts int(5));")
-cursor.execute("CREATE TABLE IF NOT EXISTS Customer (account_Number int(10),name varchar(30));")
-cursor.execute("CREATE TABLE IF NOT EXISTS Account( account_Number int(5), account_type int(1) , balance int(10));")
-
+cursor.execute("CREATE TABLE IF NOT EXISTS Branch(branch_name varchar(30),Number_of_Accounts int(10));")
+cursor.execute("CREATE TABLE IF NOT EXISTS Customer (name varchar(30) , surname varchar(30),Mobile_Number int(10), account_Number int(10),account_type int(10));")
+cursor.execute("CREATE TABLE IF NOT EXISTS Account( account_Number int(10) Primary Key, account_type int(1) , branch_name varchar(30),balance int(10));")
 class AccountType:
-    CHECKING = 1
-    SAVINGS = 2
-    LOAN = 3
+    Checking = 1
+    Savings = 2
+    Loan = 3
 
 class Account:
-    def __init__(self, accountNumber, accountType, balance=0):
+    def __init__(self, accountNumber, accountType, balance):
         self.accountNumber = accountNumber
         self.accountType = accountType
         self.balance = balance
         
+        
     
-    def deposit(self, amount):
-        self.balance += amount
+    def deposit():
+        
+        try: 
+            Acc = int(input("Enter Account Number :"))
+            a = str(Acc)
+            branch_naam = input("Enter Branch name:")
+            name = input("Enter name as per account  : ")
+            if not name.isalpha:
+                print("Enter Valid Name??")
+            else:
+                surname = input("Enter surname as per account :")
+                if not name.isalpha:
+                    print("Enter Valid SurName??")
+                else:
+       
+                    mobile = input("Enter Your Mobile number:")
+                    t = str(Acc)
+                    r = cursor.execute("""Select balance from Account INNER JOIN Customer ON
+                            Account.account_Number = Customer.account_Number 
+                            where name = (?) and surname = (?) and Account.account_Number = (?) and Mobile_Number = (?) and Account.branch_name = (?)""" , (name,surname,a,mobile,branch_naam))
+        
+                    mk = r.fetchone()
+                    lo = list(mk)
+                    p = lo[0]
+                    b = int(input("Enter Amount to deposit : "))
+                    l = p + b
+                    
+                    cursor.execute("""UPDATE Account SET balance = (?)
+                                            where account_Number = (?)""" , (l,t))
+                        
+                    con.commit()
+                    print("Amount Has Been Credited !!")
+        except TypeError : 
+            print("Account Not In DataBase !!!")
+        
+    def withdraw():
+        try: 
+            Acc = int(input("Enter Account Number :"))
+            a = str(Acc)
+            branch_naam = input("Enter Branch name:")
+            name = input("Enter name as per account  : ")
+            if not name.isalpha:
+                print("Enter Valid Name??")
+            else:
+                surname = input("Enter surname as per account :")
+                if not name.isalpha:
+                    print("Enter Valid SurName??")
+                else:
+       
+                    mobile = input("Enter Your Mobile number:")
+                    t = str(Acc)
+                    r = cursor.execute("""Select balance from Account INNER JOIN Customer ON
+                            Account.account_Number = Customer.account_Number 
+                            where name = (?) and surname = (?) and Account.account_Number = (?) and Mobile_Number = (?) and Account.branch_name = (?)""" , (name,surname,a,mobile,branch_naam))
+                    
+                    mk = r.fetchone()
+                    lo = list(mk)
+                    p = lo[0]
+                    b = int(input("Enter Amount to Withdarw : "))
+                    if b <= p:
+                        l = p - b
+                        
+                        cursor.execute("""UPDATE Account SET balance = (?)
+                                                where account_Number = (?)""" , (l,t))
+                            
+                        con.commit()
+                        print("Amount Has Been Debited !!")
+                    else:
+                        print("Insufficient Balance")
+        except TypeError : 
+            print("Account Not In DataBase !!!")
+        
     
-    def withdraw(self, amount):
-        if self.balance < amount:
-            raise ValueError('Insufficient balance')
-        self.balance -= amount
+    def getBalance():
+        try:
+            Acc = int(input("Enter Account Number :"))
+            a = str(Acc)
+            branch_naam = input("Enter Branch name:")
+            name = input("Enter name as per account  : ")
+            if not name.isalpha:
+                print("Enter Valid Name??")
+            else:
+                surname = input("Enter surname as per account :")
+                if not name.isalpha:
+                    print("Enter Valid SurName??")
+                else:
+                    mobile = input("Enter Your Mobile number:")
+                    y = cursor.execute("""Select balance from Account INNER JOIN Customer ON
+                            Account.account_Number = Customer.account_Number 
+                            where name = (?) and surname = (?) and Account.account_Number = (?) and Mobile_Number = (?) and Account.branch_name = (?)""" , (name,surname,a,mobile,branch_naam))
+                    lo = y.fetchone()
+                    p = list(lo)
+                    for i in p:
+                        print("Balance in your account is:" + str(i))
+        except TypeError:
+                print("Account Number,name,surname or mobilenumber is incorrect  ")
+        except ValueError:
+                print("Invalid Input !!!")
+class Branch:
     
-    def getBalance(self):
-        return self.balance
-class Customer:
+            
     def __init__(self, name):
         self.name = name
+        self.customers = []
+        self.accountNumberCounter = 0
+        if not hasattr(Branch, 'accountNumberCounter'): 
+            Branch.accNumberCounter = self.accountNumberCounter 
+            
+        Branch.accountNumberCounter = self.accountNumberCounter
+        Branch.name = self.name    
+            
+    
+    def addCustomer(self, customer):
+        self.customers.append(customer)
+        
+        for Customers in self.customers:
+            for Acc in Customers.accounts:
+                
+                cursor.execute("""INSERT INTO Customer(account_Number, Mobile_Number ,name ,surname , account_type)\
+                VALUES (?,?,?,?,?) """,(Acc.accountNumber,Customers.MObileNumber,Customers.name ,Customers.surname , Acc.accountType))
+                
+        
+    def getCustomer():
+        try:
+            Acc = int(input("Enter Account Number :"))
+            a = str(Acc)
+            y = cursor.execute("""Select Customer.account_Number, Customer.account_type , Customer.name , Customer.surname , Account.branch_name , Customer.Mobile_Number from Customer INNER JOIN Account ON
+                                  Account.account_Number = Customer.account_Number 
+                                  where Account.account_Number = (?)""" , [a])
+            lo = y.fetchall()
+            
+            for i in lo:
+                for j in range(0,len(i)):
+                    print(i[j])
+            
+        except TypeError:
+                print("Account Number,name,surname or mobilenumber is incorrect  ")
+        except ValueError:
+                print("Invalid Input !!!")
+    
+    def createAccount(self,account_number, customer, accountType , balance = 0):
+        account = Account(account_number, accountType , balance)
+        customer.addAccount(account)
+        return account.accountNumber
+class Customer(Branch,Account):
+    def __init__(self, name , surname , MObileNumber):
+        self.name = name
+        self.surname = surname
         self.accounts = []
-
+        self.MObileNumber = MObileNumber
+    
 
     def addAccount(self, account):
         self.accounts.append(account)
         for Account in self.accounts:
-            cursor.execute("""INSERT INTO Account (account_Number,account_type , balance)\
-            VALUES (?,?,?) """,(Account.accountNumber,Account.accountType,Account.balance))
+            
+            cursor.execute("""INSERT INTO Account (branch_name,account_Number,account_type , balance)\
+            VALUES (?,?,?,?) """,(Branch.name,Account.accountNumber,Account.accountType,Account.balance))
+            
         con.commit()
-    def getAccount(self, accountNumber):
-        for account in self.accounts:
-            if account.accountNumber == accountNumber:
-                return account
-        return None
-class Branch:
+    def getAccount():
+       try:
+           
+           name = input("Enter name as per account  : ")
+           if not name.isalpha:
+               print("Enter Valid Name??")
+           else:
+               surname = input("Enter surname as per account :")
+               if not name.isalpha:
+                   print("Enter Valid SurName??")
+               else:
+                   mobile = int(input("Enter mobile number :"))
+                   o = str(mobile)
+                   y = cursor.execute("""Select Customer.account_Number , Customer.account_type, Customer.name , Customer.surname , Account.branch_name , Customer.Mobile_Number from Customer INNER JOIN Account ON
+                                         Account.account_Number = Customer.account_Number 
+                                         where Customer.name = (?) and Customer.surname = (?) and Customer.Mobile_Number = (?)""" , (name,surname,o))
+                   lo = y.fetchall()
+                   
+                   for i in lo:
+                       for j in range(0,len(i)):
+                           print(i[j])
+           
+       except TypeError:
+               print("Account Number,name,surname or mobilenumber is incorrect  ")
+       except ValueError:
+               print("Invalid Input !!!")
+class Bank(Branch):
     def __init__(self, name):
         self.name = name
-        self.customers = []
-        self.accountNumberCounter = 1
-    
-    def addCustomer(self, customer):
-        self.customers.append(customer)
-        for Customers in self.customers:
-            for Acc in Customers.accounts:
-                cursor.execute("""INSERT INTO Customer(account_Number ,name)\
-                VALUES (?,?) """,(Acc.accountNumber,Customers.name))
-        con.commit()
-    def getCustomer(self, name):
-        for customer in self.customers:
-            if customer.name == name:
-                return customer
-        return None
-    
-    def createAccount(self, customer, accountType , balance = 0):
-        account = Account(self.accountNumberCounter, accountType , balance)
-        customer.addAccount(account)
-        self.accountNumberCounter += 1
-        return account.accountNumber
-
-class Bank:
-    def __init__(self, name, fileName):
-        self.name = name
         self.branches = []
-        self.fileName = fileName
-
+        
 
     def addBranch(self, branch):
         self.branches.append(branch)
-        for Branches in self.branches:
-            cursor.execute("""INSERT INTO Branch(branch_name,NAccounts)\
-            VALUES (?,?) """,(Branches.name,Branches.accountNumberCounter))
-        con.commit()
-        self.writeToFile()
-    def getBranch(self, name):
-        for branch in self.branches:
-            if branch.name == name:
-                return branch
-        return None
+        e = cursor.execute("""SELECT Number_of_Accounts from branch\
+        where branch_name = (?) """,(Branch.name))
+        o = e.fetchone()
+        print(o)
+        if o == None:
+            Branch.accNumberCounter = 1
+            cursor.execute("""INSERT INTO Branch(branch_name,Number_of_Accounts)\
+            VALUES (?,?) """,(Branch.name,Branch.accNumberCounter))
+            con.commit()
+        else:
+            p = list(o)
+            for i in p:
+                s = i
+            Branch.accNumberCounter = s + 1
+            cursor.execute("""UPDATE Branch SET Number_of_Accounts = (?) WHERE
+            branch_name = (?)""",(Branch.accNumberCounter,Branch.name))
+            con.commit()
+        
+    def getBranch():
+        r = cursor.execute("""SELECT branch_name From Branch""")
+        o = r.fetchall()
+        if o == None:
+            print("There is not any branch available")
+        else:
+            print("List of all available branches: ")
+            for i in o:
+                for j in range(0,len(i)):
+                    print(i[j])
 
-    def readFromFile(self):
-        try:
-            with open(self.fileName, 'r') as file:
-                for line in file:
-                    data = line.strip().split(",")
-                    
-                    if len(data) == 2:
-                        branch = Branch(data[0])
-                        self.addBranch(branch)
-                    elif len(data) == 3:
-                        customer = Customer(data[0])
-                        account = Account(int(data[2]), AccountType[data[3]])
-                        customer.addAccount(account)
-                        branch = self.getBranch(data[1])
-                        if branch:
-                            branch.addCustomer(customer)
-                        else:
-                            branch = Branch(data[3])
-                            branch.addCustomer(customer)
-                            self.addBranch(branch)
-        except FileNotFoundError:
-            pass
-    
-    def writeToFile(self):
-        with open(self.fileName, 'w') as file:
-            for branch in self.branches:
-                for customer in branch.customers:
-                    for account in customer.accounts:
-                                file.write(f"Customer_name : {customer.name},branch_name : {branch.name},account no.: {account.accountNumber} ,account type : {account.accountType} , account balance : {account.balance}\n")
+def CreateAccount():
+    try:
+        a = (input("Enter Name : "))
+        if not a.isalpha():
+            print("Please enter only alphabetical characters for your name.")
+        else:
+        
+            f = str(input("Enter a surname:"))
+            
+            if not f.isalpha():
+                    print("Please enter only alphabetical characters for your surnamename.")
+            else:
+                    g = int(input("Enter Mobile Numner : "))
+                    if len(str(g)) != 10:
+                        print("Lenght Of Mobile number must equal 10:")
+                    else:
+                        s = True
+                        while(s):
+                                b = ''.join(random.choice(string.digits) for _ in range(8))
+                               
                                 
-                                
+                                r = cursor.execute("""SELECT balance from Account Where account_Number = (?)""",[b])
+                                o = r.fetchone()
+                                if o == None:
+                                    c = int(input("Enter the account type:"))
+                                    if c >= 4:
+                                        print("Enter valid account type:")
+                                    else:
+                                        d = input("Eneter Branch name:")
+                                        e = int(input("Enter Opening Balance : "))
+                                        
+                                        
+                                        branch1 = Branch(d)
+                                        bank.addBranch(branch1)
+                                            
+                                        customer1 = Customer(a,f,g)
+                                    
+                                        branch1.createAccount(b,customer1,c,e)
+                                                                            
+                                        branch1.addCustomer(customer1)
+                                        
+                                        print("Account is created !!! With Account Number = "+ b+ " And Account Type is : " + str(c))
+                                        s = False
+            
+              
+    except ValueError:
+        print("Invalid Input !!!")
+    
+    con.commit()
 
-if __name__ == '__main__':
-
-    bank = Bank('My Bank', 'data.txt')
-    bank.readFromFile()
-    
-    
-    branch1 = Branch('Branch 1')
-    bank.addBranch(branch1)
-    
-    
-    customer1 = Customer('John Smith')
-    customer2 = Customer("Avit")
-    accountNumber1 = branch1.createAccount(customer1, AccountType.CHECKING)
-    accountNumber2 = branch1.createAccount(customer2,AccountType.LOAN,10000)
-   
-    account1 = customer1.getAccount(accountNumber1)
-    account2 = customer2.getAccount(accountNumber2)
-    account1.deposit(100)
-   
-    
-    
-    
-    branch1.addCustomer(customer1)
-    branch1.addCustomer(customer2)
-    e = cursor.execute("Select * from branch")
-    print(e.fetchall())
-    f = cursor.execute("select * from Customer")
-    print(f.fetchall())
-    t = cursor.execute("select * from Account")
-    print(t.fetchall())
-    bank.writeToFile()
-    con.close()
+bank = Bank('Bank')
+s = True
+while(s):
+    try:
+        print('''
+                  1. ADD/OPEN ACCOUNT 
+                  2. DEPOSIT 
+                  3. WITHDRAW
+                  4. Show Balance
+                  5 .Customer Information
+                  6. Account Information
+                  7. Get Branches
+                  8. Close
+                  
+                  ''')
+        c = int(input("Enter Your Choice :   "))
+        if c == 1:
+            CreateAccount()
+        elif c == 2:
+           Account.deposit()
+        elif c == 3:
+            Account.withdraw()
+        elif c == 4 :
+            Account.getBalance()
+        elif c== 5:
+            Branch.getCustomer()
+        elif c == 6 :
+            Customer.getAccount()
+        elif c == 7:
+            Bank.getBranch()
+        elif c == 8:
+            s = False
+            con.close()
+        else:
+            print("Enter Value 1 to 8")
+        
+    except ValueError:
+        print("Invalid Input !!!")
+        continue
